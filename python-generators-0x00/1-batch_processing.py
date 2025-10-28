@@ -50,7 +50,7 @@ def batch_processing(batch_size):
     for batch in stream_users_in_batches(batch_size):
         # Loop 3 — iterate over users in batch
         filtered_users = [user for user in batch if float(user['age']) > 25]
-        yield filtered_users
+        return filtered_users
 
 
 # -----------------------------
