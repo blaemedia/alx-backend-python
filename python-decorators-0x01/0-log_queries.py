@@ -5,7 +5,7 @@ from datetime import datetime
 def with_db_connection(func):
     """Decorator to manage database connection."""
     # Decorator to log SQL queries
-def log_queries(func):
+   
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # Assume the query is passed as a keyword argument or positional argument
