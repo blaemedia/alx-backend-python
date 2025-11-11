@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'messaging_app',
     'rest_framework',
+    'drf_nested_routers', 
     'chats'
 ]
 
