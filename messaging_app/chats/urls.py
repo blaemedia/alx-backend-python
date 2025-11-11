@@ -8,14 +8,10 @@ router = rest_framework.routers.DefaultRouter()
 router.register(r'conversations', views.ConversationViewSet)
 router.register(r'messages', views.MessageViewSet)
 
-# Create nested router for messages
-conversations_router = nested_routers.NestedDefaultRouter(
-    router, r'conversations', lookup='conversation'
-)
-conversations_router.register(r'messages', views.MessageViewSet, basename='conversation-messages')
+nested_router = nested_routers.NestedDefaultRouter(router, r'conversations', lookup='conversation')
+
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include(conversations_router.urls)),
    # path('', views.chats, name='chats_list'),
 ]
