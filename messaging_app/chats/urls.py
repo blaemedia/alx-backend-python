@@ -10,6 +10,6 @@ router.register(r'messages', views.MessageViewSet)
 
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
    # path('', views.chats, name='chats_list'),
 ]
