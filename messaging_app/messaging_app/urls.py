@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', lambda request: HttpResponseRedirect('chats/')),
     path('chats/', include('chats.urls')),
+    path('api/', include('chats.urls')),
 ]
