@@ -6,11 +6,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer, UserSerializer
-from rest_framework.routers import DefaultRouter
 
-router = DefaultRouter()
-router.register(r'conversations', views.ConversationViewSet)
-router.register(r'messages', views.MessageViewSet)
+
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
