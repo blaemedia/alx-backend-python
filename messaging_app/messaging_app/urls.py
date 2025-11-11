@@ -24,4 +24,6 @@ urlpatterns = [
     path('', lambda request: HttpResponseRedirect('chats/')),
     path('chats/', include('chats.urls')),
     path('api/', include('chats.urls')),
+
+    path('api-auth/', include('rest_framework.urls')),
 ]
