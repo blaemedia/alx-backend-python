@@ -125,7 +125,5 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assert the result matches the expected value
         self.assertEqual(result, expected_result)
 
-
 if __name__ == "__main__":
     unittest.main()
-    
