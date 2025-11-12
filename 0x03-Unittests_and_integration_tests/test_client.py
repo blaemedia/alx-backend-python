@@ -125,6 +125,63 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assert the result matches the expected value
         self.assertEqual(result, expected_result)
 
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Test class for GithubOrgClient integration tests"""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class method to mock requests.get"""
+        # Start a patcher for requests.get
+        cls.get_patcher = patch('requests.get')
+        
+        # Start the mock
+        cls.mock_get = cls.get_patcher.start()
+        
+        # Define side_effect function to return different payloads based on URL
+        def side_effect(url):
+            class MockResponse:
+                @staticmethod
+                def json():
+                    if url.endswith('/orgs/test-org'):
+                        return cls.org_payload
+                    elif url.endswith('/repos'):
+                        return cls.repos_payload
+                    else:
+                        return None
+            
+            return MockResponse()
+        
+        # Set the side_effect for the mock
+        cls.mock_get.side_effect = side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        """Tear down class method to stop the patcher"""
+        # Stop the patcher
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """Test public_repos method in integration"""
+        # Create client instance
+        client = GithubOrgClient("test-org")
+        
+        # Call public_repos method
+        result = client.public_repos()
+        
+        # Assert the result matches expected_repos
+        self.assertEqual(result, self.expected_repos)
+
+    def test_public_repos_with_license(self):
+        """Test public_repos method with license filter in integration"""
+        # Create client instance
+        client = GithubOrgClient("test-org")
+        
+        # Call public_repos method with license filter
+        result = client.public_repos(license="apache-2.0")
+        
+        # Assert the result matches apache2_repos
+        self.assertEqual(result, self.apache2_repos)
+        
 
 if __name__ == "__main__":
     unittest.main()
