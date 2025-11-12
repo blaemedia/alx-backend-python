@@ -6,9 +6,10 @@ Contains unit tests for all methods of GithubOrgClient
 
 import unittest
 from unittest.mock import patch, PropertyMock
-from parameterized import parameterized,parameterized_class
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
+
 
 class TestGithubOrgClient(unittest.TestCase):
     """Test class for GithubOrgClient"""
@@ -125,6 +126,7 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assert the result matches the expected value
         self.assertEqual(result, expected_result)
 
+
 @parameterized_class([
     {
         'org_payload': TEST_PAYLOAD[0][0],
@@ -141,10 +143,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """Set up class method to mock requests.get"""
         # Start a patcher for requests.get
         cls.get_patcher = patch('requests.get')
-        
+
         # Start the mock
         cls.mock_get = cls.get_patcher.start()
-        
+
         # Define side_effect function to return different payloads based on URL
         def side_effect(url):
             class MockResponse:
@@ -156,9 +158,9 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
                         return cls.repos_payload
                     else:
                         return None
-            
+
             return MockResponse()
-        
+
         # Set the side_effect for the mock
         cls.mock_get.side_effect = side_effect
 
@@ -172,10 +174,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """Test public_repos method in integration"""
         # Create client instance
         client = GithubOrgClient("test-org")
-        
+
         # Call public_repos method
         result = client.public_repos()
-        
+
         # Assert the result matches expected_repos
         self.assertEqual(result, self.expected_repos)
 
@@ -183,10 +185,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """Test public_repos method with license filter in integration"""
         # Create client instance
         client = GithubOrgClient("test-org")
-        
+
         # Call public_repos method with license filter
         result = client.public_repos(license="apache-2.0")
-        
+
         # Assert the result matches apache2_repos
         self.assertEqual(result, self.apache2_repos)
 
