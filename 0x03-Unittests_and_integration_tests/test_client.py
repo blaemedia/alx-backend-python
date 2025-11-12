@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
-
-# Minimal mock implementation for testing
-class MockGithubOrgClient:
-    def __init__(self, org_name):
-        self.org_name = org_name
-        self._org = None
-    
-    def org(self):
-        if self._org is None:
-            # Simulate API call
-            self._org = {"login": self.org_name}
-        return self._org
+from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -21,37 +10,54 @@ class TestGithubOrgClient(unittest.TestCase):
         ("google",),
         ("abc",),
     ])
-    @patch('client.get_json', create=True)  # Use create=True if get_json might not exist
+    @patch('client.get_json')
     def test_org(self, org_name, mock_get_json):
         """Test that GithubOrgClient.org returns the correct value"""
-        try:
-            # Try to import the actual client, fall back to mock if it fails
-            from client import GithubOrgClient
-        except ImportError:
-            GithubOrgClient = MockGithubOrgClient
-
-        # Set up the mock
         expected_result = {"login": org_name}
         mock_get_json.return_value = expected_result
 
-        # Create client instance
         client = GithubOrgClient(org_name)
 
         # Call the org method
         result = client.org()
 
-        # Assertions
         self.assertEqual(result, expected_result)
-        
-        # Verify get_json was called with correct URL (only if using actual client)
-        if hasattr(mock_get_json, 'assert_called_once'):
-            mock_get_json.assert_called_once_with(
-                f"https://api.github.com/orgs/{org_name}"
-            )
 
-        # Test memoization
+        # Assert get_json was called once with the correct URL
+        mock_get_json.assert_called_once_with(
+            f"https://api.github.com/orgs/{org_name}"
+        )
+
+        # Test memoization - call again
         result2 = client.org()
         self.assertEqual(result2, expected_result)
+        mock_get_json.assert_called_once()  # should still be called once due to memoization
+
+    def test_public_repos_url(self):
+        """Test that _public_repos_url returns the correct value based on mocked org payload"""
+        # Test payload with repos_url
+        test_payload = {
+            "repos_url": "https://api.github.com/orgs/test-org/repos",
+            "login": "test-org",
+            "id": 123456
+        }
+        
+        # Use patch as a context manager to mock the org property
+        with patch('client.GithubOrgClient.org', new_callable=PropertyMock) as mock_org:
+            # Set the return value of the mocked property
+            mock_org.return_value = test_payload
+            
+            # Create client instance
+            client = GithubOrgClient("test-org")
+            
+            # Call the _public_repos_url property
+            result = client._public_repos_url
+            
+            # Assert the result is the expected repos_url from the payload
+            self.assertEqual(result, test_payload["repos_url"])
+            
+            # Verify the org property was accessed
+            mock_org.assert_called_once()
 
 
 if __name__ == "__main__":
