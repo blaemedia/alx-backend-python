@@ -55,26 +55,31 @@ class TestAccessNestedMap(unittest.TestCase):
 class TestGetJson(unittest.TestCase):
     """Test class for get_json function"""
 
-    @parameterized.expand([
-        ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),
-    ])
-    def test_get_json(self, test_url, test_payload):
-        """Test get_json returns the expected result without making actual HTTP calls"""
-        # Create a mock response object
+    def test_get_json_example_com(self):
+        """Test get_json with http://example.com"""
+        test_url = "http://example.com"
+        test_payload = {"payload": True}
+        
         mock_response = Mock()
         mock_response.json.return_value = test_payload
         
-        # Patch requests.get to return our mock response
-        with patch('utils.requests.get', return_value=mock_response) as mock_get:
-            # Call the function
+        with patch('requests.get', return_value=mock_response) as mock_get:
             result = get_json(test_url)
-            
-            # Assert that requests.get was called exactly once with test_url
             mock_get.assert_called_once_with(test_url)
-            
-            # Assert that the result equals test_payload
             self.assertEqual(result, test_payload)
 
+    def test_get_json_holberton_io(self):
+        """Test get_json with http://holberton.io"""
+        test_url = "http://holberton.io"
+        test_payload = {"payload": False}
+        
+        mock_response = Mock()
+        mock_response.json.return_value = test_payload
+        
+        with patch('requests.get', return_value=mock_response) as mock_get:
+            result = get_json(test_url)
+            mock_get.assert_called_once_with(test_url)
+            self.assertEqual(result, test_payload)
+            
 if __name__ == '__main__':
     unittest.main()
