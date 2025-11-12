@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized,parameterized_class
 from client import GithubOrgClient
-
+from fixtures import TEST_PAYLOAD
 
 class TestGithubOrgClient(unittest.TestCase):
     """Test class for GithubOrgClient"""
@@ -125,6 +125,14 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assert the result matches the expected value
         self.assertEqual(result, expected_result)
 
+@parameterized_class([
+    {
+        'org_payload': TEST_PAYLOAD[0][0],
+        'repos_payload': TEST_PAYLOAD[0][1],
+        'expected_repos': TEST_PAYLOAD[0][2],
+        'apache2_repos': TEST_PAYLOAD[0][3]
+    }
+])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Test class for GithubOrgClient integration tests"""
 
