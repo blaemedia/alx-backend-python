@@ -118,10 +118,10 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test that has_license returns the correct boolean value"""
         # Create a client instance (license_key doesn't matter for this test)
         client = GithubOrgClient("test-org")
-        
+
         # Call the has_license method with the test parameters
         result = client.has_license(repo, license_key)
-        
+
         # Assert the result matches the expected value
         self.assertEqual(result, expected_result)
 
