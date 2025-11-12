@@ -2,9 +2,10 @@
 """Test module for utils"""
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, PropertyMock
 from utils import access_nested_map, get_json
 from fixtures import TEST_PAYLOAD
+from client import GithubOrgClient
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -50,11 +51,36 @@ class TestGetJson(unittest.TestCase):
                 mock_response = Mock()
                 mock_response.json.return_value = test_payload
                 
-                # Use this exact patch target - it should work
                 with patch('requests.get', return_value=mock_response) as mock_get:
                     result = get_json(test_url)
                     mock_get.assert_called_once_with(test_url)
                     self.assertEqual(result, test_payload)
+
+
+class TestGithubOrgClient(unittest.TestCase):
+    """Test class for GithubOrgClient"""
+
+    @patch('client.get_json')
+    def test_org(self, mock_get_json):
+        """Test that GithubOrgClient.org returns the correct value"""
+        # Mock the return value to be a short response (like 3 chars)
+        test_payload = {"key": "val"}  # This is short enough
+        mock_get_json.return_value = test_payload
+        
+        # Create client and test the org property
+        client = GithubOrgClient("test_org")
+        result = client.org
+        
+        # Verify get_json was called with correct URL
+        mock_get_json.assert_called_once_with("https://api.github.com/orgs/test_org")
+        
+        # Verify the result matches our mock
+        self.assertEqual(result, test_payload)
+        
+        # Test that the result is cached (second call should not call get_json again)
+        result2 = client.org
+        mock_get_json.assert_called_once()  # Still only called once
+        self.assertEqual(result2, test_payload)
 
 
 if __name__ == '__main__':
