@@ -66,7 +66,9 @@ class TestMemoize(unittest.TestCase):
                 return self.a_method()
 
         # Patch the a_method so we can track how many times it's called
-        with patch.object(TestClass, "a_method", return_value=42) as mock_method:
+        with patch.object(
+            TestClass, "a_method", return_value=42
+        ) as mock_method:
             obj = TestClass()
 
             # First call should invoke a_method once
