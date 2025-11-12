@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+Test module for GithubOrgClient class
+Contains unit tests for all methods of GithubOrgClient
+"""
+
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
@@ -6,6 +11,8 @@ from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
+    """Test class for GithubOrgClient"""
+
     @parameterized.expand([
         ("google",),
         ("abc",),
@@ -102,6 +109,7 @@ class TestGithubOrgClient(unittest.TestCase):
 
             # Verify that get_json was called once with correct URL
             mock_get_json.assert_called_once_with(mock_repos_url)
+
 
 if __name__ == "__main__":
     unittest.main()
