@@ -6,7 +6,7 @@ Contains unit tests for all methods of GithubOrgClient
 
 import unittest
 from unittest.mock import patch, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized,parameterized_class
 from client import GithubOrgClient
 
 
@@ -181,7 +181,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         
         # Assert the result matches apache2_repos
         self.assertEqual(result, self.apache2_repos)
-        
+
 
 if __name__ == "__main__":
     unittest.main()
