@@ -63,7 +63,7 @@ class TestMemoize(unittest.TestCase):
             def a_property(self):
                 return self.a_method()
 
-        # Patch the a_method so we can track how many times it’s called
+        # Patch the a_method so we can track how many times it's called
         with patch.object(TestClass, "a_method", return_value=42) as mock_method:
             obj = TestClass()
 
@@ -75,7 +75,7 @@ class TestMemoize(unittest.TestCase):
             # Second call should use cached value (no new calls)
             result2 = obj.a_property
             self.assertEqual(result2, 42)
-            mock_method.assert_called_once() 
+            mock_method.assert_called_once()
 
 if __name__ == "__main__":
     unittest.main()
