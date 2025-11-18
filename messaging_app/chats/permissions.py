@@ -102,3 +102,14 @@ class IsAuthenticated(BasePermission):
     def has_object_permission(self, request, view, obj):
         # For simple authentication, allow access to any object if user is authenticated
         return request.user and request.user.is_authenticated
+    
+
+class IsSenderOrReceiver(permissions.BasePermission):
+    """
+    Object-level permission to only allow sender or receiver of a message to view/edit it.
+    """
+    
+    def has_object_permission(self, request, view, obj):
+        # Read/write permissions are only allowed to the sender or receiver of the message
+        return obj.sender == request.user or obj.receiver == request.user
+
