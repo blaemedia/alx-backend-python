@@ -65,8 +65,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.CustomPagination',
-    'PAGE_SIZE': 20
+    
 }
 
 MIDDLEWARE = [
