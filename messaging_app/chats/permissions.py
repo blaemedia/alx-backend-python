@@ -1,67 +1,57 @@
+# chats/permissions.py
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+
+class IsOwner(BasePermission):
+    """
+    Only allow owners to perform any action (including PUT, PATCH, DELETE)
+    """
+    def has_object_permission(self, request, view, obj):
+        # Check various common owner field names
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        if hasattr(obj, 'user'):
+            return obj.user == request.user
+        if hasattr(obj, 'sender'):
+            return obj.sender == request.user
+        if hasattr(obj, 'author'):
+            return obj.author == request.user
+        if hasattr(obj, 'created_by'):
+            return obj.created_by == request.user
+        
+        # Default: only allow if user matches the object (for User model)
+        return obj == request.user
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
+class IsOwnerOrReadOnly(BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
     """
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
+        # Read permissions are allowed to any request
+        if request.method in SAFE_METHODS:
             return True
 
-        # Write permissions are only allowed to the owner.
-        return obj.owner == request.user
+        # Write permissions (PUT, PATCH, DELETE) are only allowed to the owner
+        return IsOwner().has_object_permission(request, view, obj)
 
 
-class IsMessageOwner(permissions.BasePermission):
+class IsMessageParticipant(BasePermission):
     """
-    Custom permission to only allow owners of a message to access it.
-    """
-    def has_object_permission(self, request, view, obj):
-        # Check if the user is the sender or receiver of the message
-        return obj.sender == request.user or obj.receiver == request.user
-
-
-class IsConversationParticipant(permissions.BasePermission):
-    """
-    Custom permission to only allow participants of a conversation to access it.
+    Custom permission to only allow participants of a message to access it.
     """
     def has_object_permission(self, request, view, obj):
-        # Check if the user is one of the participants in the conversation
-        return request.user in obj.participants.all()
-
-
-class IsUserProfileOwner(permissions.BasePermission):
-    """
-    Custom permission to only allow users to access their own profile.
-    """
-    def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
-
-
-class CanAccessUserMessages(permissions.BasePermission):
-    """
-    Custom permission to ensure users can only access their own messages.
-    """
-    def has_permission(self, request, view):
-        # For list views, check if user is accessing their own messages
-        if hasattr(view, 'get_queryset'):
-            return True
-        return request.user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
-        # Users can only access messages where they are sender or receiver
-        if hasattr(obj, 'sender') and hasattr(obj, 'receiver'):
-            return obj.sender == request.user or obj.receiver == request.user
+        # Allow GET, HEAD, OPTIONS for participants
+        if request.method in SAFE_METHODS:
+            if hasattr(obj, 'sender') and hasattr(obj, 'receiver'):
+                return request.user in [obj.sender, obj.receiver]
+            if hasattr(obj, 'participants'):
+                return request.user in obj.participants.all()
+            return False
         
-        # For conversation objects, check if user is a participant
-        if hasattr(obj, 'participants'):
-            return request.user in obj.participants.all()
-        
-        # For user profiles, only allow access to own profile
-        if hasattr(obj, 'user'):
-            return obj.user == request.user
+        # Allow PUT, PATCH, DELETE only for specific conditions
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            # Use IsOwner permission for write operations
+            return IsOwner().has_object_permission(request, view, obj)
         
         return False

@@ -1,57 +1,57 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.permissions import IsAuthenticated, BasePermission
-from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
-from django.contrib.auth import get_user_model
+# chats/permissions.py
+from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-User = get_user_model()
-
-class CustomJWTAuthentication(JWTAuthentication):
+class IsOwner(BasePermission):
     """
-    Custom JWT Authentication with additional validation
-    """
-    def authenticate(self, request):
-        header = self.get_header(request)
-        
-        if header is None:
-            return None
-
-        raw_token = self.get_raw_token(header)
-        if raw_token is None:
-            return None
-
-        validated_token = self.get_validated_token(raw_token)
-        
-        # Additional custom validation
-        user = self.get_user(validated_token)
-        
-        # Check if user is active
-        if not user.is_active:
-            raise AuthenticationFailed('User is inactive')
-            
-        return (user, validated_token)
-
-
-class IsTokenOwner(BasePermission):
-    """
-    Custom permission to only allow owners of an object to access it
+    Only allow owners to perform any action (including PUT, PATCH, DELETE)
     """
     def has_object_permission(self, request, view, obj):
-        # Assuming obj has a 'user' attribute
-        return obj.user == request.user
+        # Check various common owner field names
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        if hasattr(obj, 'user'):
+            return obj.user == request.user
+        if hasattr(obj, 'sender'):
+            return obj.sender == request.user
+        if hasattr(obj, 'author'):
+            return obj.author == request.user
+        if hasattr(obj, 'created_by'):
+            return obj.created_by == request.user
+        
+        # Default: only allow if user matches the object (for User model)
+        return obj == request.user
 
 
-class JWTAuth:
+class IsOwnerOrReadOnly(BasePermission):
     """
-    Base JWT authentication configuration for views
+    Custom permission to only allow owners of an object to edit it.
     """
-    authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        if request.method in SAFE_METHODS:
+            return True
+
+        # Write permissions (PUT, PATCH, DELETE) are only allowed to the owner
+        return IsOwner().has_object_permission(request, view, obj)
 
 
-class JWTAuthWithOwnerPermission:
+class IsMessageParticipant(BasePermission):
     """
-    JWT authentication with owner permission check
+    Custom permission to only allow participants of a message to access it.
     """
-    authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsTokenOwner]
+    def has_object_permission(self, request, view, obj):
+        # Allow GET, HEAD, OPTIONS for participants
+        if request.method in SAFE_METHODS:
+            if hasattr(obj, 'sender') and hasattr(obj, 'receiver'):
+                return request.user in [obj.sender, obj.receiver]
+            if hasattr(obj, 'participants'):
+                return request.user in obj.participants.all()
+            return False
+        
+        # Allow PUT, PATCH, DELETE only for specific conditions
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            # Use IsOwner permission for write operations
+            return IsOwner().has_object_permission(request, view, obj)
+        
+        return False
