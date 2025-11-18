@@ -6,6 +6,10 @@ class IsOwner(BasePermission):
     """
     Only allow owners to perform any action (including PUT, PATCH, DELETE)
     """
+    def has_permission(self, request, view):
+        # Check if user is authenticated
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         # Check various common owner field names
         if hasattr(obj, 'owner'):
@@ -27,6 +31,10 @@ class IsOwnerOrReadOnly(BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
     """
+    def has_permission(self, request, view):
+        # Check if user is authenticated
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request
         if request.method in SAFE_METHODS:
@@ -40,6 +48,10 @@ class IsMessageParticipant(BasePermission):
     """
     Custom permission to only allow participants of a message to access it.
     """
+    def has_permission(self, request, view):
+        # Check if user is authenticated
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         # Allow GET, HEAD, OPTIONS for participants
         if request.method in SAFE_METHODS:
@@ -55,3 +67,38 @@ class IsMessageParticipant(BasePermission):
             return IsOwner().has_object_permission(request, view, obj)
         
         return False
+
+
+class AllowAllForParticipants(BasePermission):
+    """
+    Allow all methods (GET, POST, PUT, PATCH, DELETE) for participants
+    """
+    def has_permission(self, request, view):
+        # Check if user is authenticated
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        # Check if user is a participant
+        if hasattr(obj, 'sender') and hasattr(obj, 'receiver'):
+            return request.user in [obj.sender, obj.receiver]
+        if hasattr(obj, 'participants'):
+            return request.user in obj.participants.all()
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        if hasattr(obj, 'user'):
+            return obj.user == request.user
+        
+        return False
+
+
+class IsAuthenticated(BasePermission):
+    """
+    Simple permission that only checks if user is authenticated
+    This is similar to DRF's IsAuthenticated but included for completeness
+    """
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        # For simple authentication, allow access to any object if user is authenticated
+        return request.user and request.user.is_authenticated
