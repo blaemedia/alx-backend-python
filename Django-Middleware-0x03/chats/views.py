@@ -9,13 +9,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Message, Conversation
-from .serializers import MessageSerializer, ConversationSerializer, ConversationDetailSerializer
-from .auth import JWTAuth, MessageJWTAuth
+from .serializers import MessageSerializer, ConversationSerializer
 from .pagination import CustomPagination
 from .filters import MessageFilter, ConversationFilter
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    authentication_classes = JWTAuth.authentication_classes
     permission_classes = [IsAuthenticated]
     serializer_class = ConversationSerializer
     pagination_class = CustomPagination
@@ -24,13 +22,12 @@ class ConversationViewSet(viewsets.ModelViewSet):
     search_fields = ['participants__username', 'participants__email']
     ordering_fields = ['last_message_timestamp', 'created_at']
     ordering = ['-last_message_timestamp']
+    queryset = Conversation.objects.all()  # FIX: Added queryset
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user)
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return ConversationDetailSerializer
         return ConversationSerializer
 
     @action(detail=True, methods=['get'])
@@ -72,7 +69,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    authentication_classes = JWTAuth.authentication_classes
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
     pagination_class = CustomPagination
@@ -81,6 +77,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     search_fields = ['content']
     ordering_fields = ['timestamp', 'id']
     ordering = ['-timestamp']
+    queryset = Message.objects.all()  # FIX: Added queryset
 
     def get_queryset(self):
         return Message.objects.filter(
@@ -103,7 +100,6 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 
 class ConversationMessagesAPIView(APIView):
-    authentication_classes = JWTAuth.authentication_classes
     permission_classes = [IsAuthenticated]
 
     def get(self, request, conversation_id):
@@ -126,7 +122,6 @@ class ConversationMessagesAPIView(APIView):
 
 
 class UserConversationsAPIView(APIView):
-    authentication_classes = JWTAuth.authentication_classes
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

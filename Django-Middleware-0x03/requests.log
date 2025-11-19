@@ -1,1 +1,17 @@
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\ALX\ALxBank-endProdev\alx-backend-python\Django-Middleware-0x03\chats\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\ALX\ALxBank-endProdev\alx-backend-python\Django-Middleware-0x03\chats\views.py changed, reloading.
+Watching for file changes with StatReloader
+2025-11-19 04:39:13.843765 - User: Anonymous - Path: /
+2025-11-19 04:39:13.882988 - User: Anonymous - Path: /chats/
+Forbidden: /chats/
+2025-11-19 04:39:14.181091 - User: Anonymous - Path: /favicon.ico
+Not Found: /favicon.ico
+2025-11-19 04:39:21.355494 - User: Anonymous - Path: /
+2025-11-19 04:39:21.360764 - User: Anonymous - Path: /register
+2025-11-19 04:39:21.374517 - User: Anonymous - Path: /admin/auth/user/
+Not Found: /register
+2025-11-19 04:39:21.457097 - User: Anonymous - Path: /admin/login/
