@@ -15,3 +15,9 @@ Not Found: /favicon.ico
 2025-11-19 04:39:21.374517 - User: Anonymous - Path: /admin/auth/user/
 Not Found: /register
 2025-11-19 04:39:21.457097 - User: Anonymous - Path: /admin/login/
+Watching for file changes with StatReloader
+2025-11-19 04:44:29.896123 - User: Anonymous - Path: /
+2025-11-19 04:44:29.958002 - User: Anonymous - Path: /chats/
+Forbidden: /chats/
+2025-11-19 04:44:30.169873 - User: Anonymous - Path: /favicon.ico
+Not Found: /favicon.ico
