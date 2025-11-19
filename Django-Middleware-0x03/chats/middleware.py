@@ -123,3 +123,13 @@ class OffensiveLanguageMiddleware:
             while (self.message_timestamps[ip_address] and 
                    (current_time - self.message_timestamps[ip_address][0]).total_seconds() > self.window_seconds):
                 self.message_timestamps[ip_address].popleft()
+
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        # Process the request
+        response = self.get_response(request)
+        return response
