@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
 
-    'drf_nested_routers', 
+    'rest_framework_nested', 
     'django_filters',
     'chats'
 ]
