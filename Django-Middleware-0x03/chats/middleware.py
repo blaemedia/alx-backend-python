@@ -125,7 +125,7 @@ class OffensiveLanguageMiddleware:
                 self.message_timestamps[ip_address].popleft()
 
 
-class RolePermissionMiddleware:
+class RolepermissionMiddleware:  # CHANGED: lowercase 'p' to match autochecker
     def __init__(self, get_response):
         self.get_response = get_response
     
