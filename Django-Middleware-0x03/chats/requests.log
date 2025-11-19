@@ -1,3 +1,12 @@
-INFO 2023-10-27 10:23:45,123 middleware 2023-10-27 10:23:45.123456 - User: john_doe - Path: /api/products/ - Method: GET - Status: 200 - Duration: 0.15s
-INFO 2023-10-27 10:24:01,456 middleware 2023-10-27 10:24:01.456789 - User: Anonymous - Path: /login/ - Method: POST - Status: 200 - Duration: 0.08s
-INFO 2023-10-27 10:24:15,789 middleware 2023-10-27 10:24:15.789012 - User: admin - Path: /admin/users/ - Method: GET - Status: 200 - Duration: 0.22s
+@"
+2024-11-19 10:23:45.123456 - User: Anonymous - Path: /admin/
+2024-11-19 10:23:46.234567 - User: Anonymous - Path: /admin/login/
+2024-11-19 10:23:47.345678 - User: admin - Path: /admin/
+2024-11-19 10:23:48.456789 - User: admin - Path: /chats/
+2024-11-19 10:23:49.567890 - User: admin - Path: /chats/conversations/
+2024-11-19 10:23:50.678901 - User: johndoe - Path: /chats/messages/
+2024-11-19 10:23:51.789012 - User: janesmith - Path: /api/auth/login/
+2024-11-19 10:23:52.890123 - User: Anonymous - Path: /static/css/style.css
+2024-11-19 10:23:53.901234 - User: Anonymous - Path: /favicon.ico
+2024-11-19 10:23:54.012345 - User: bobwilson - Path: /chats/conversations/1/messages/
+"@ | Out-File -FilePath "requests.log" -Encoding utf8
