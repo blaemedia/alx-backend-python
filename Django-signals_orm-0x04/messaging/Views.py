@@ -1,18 +1,21 @@
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.contrib.auth.models import User
 from django.shortcuts import redirect
 
 
 @login_required
 def delete_user(request):
+    """
+    Allows a logged-in user to permanently delete their account.
+    Triggers post_delete signals for cleanup.
+    """
     user = request.user
 
-    # Log out the user before deleting the account
+    # Log out before deleting the account
     logout(request)
 
-    # Delete the user (triggers post_delete signal)
+    # Delete the user account
     user.delete()
 
-    return redirect("home")   # redirect to homepage or login page
+    # Redirect after deletion
+    return redirect("home")  # Change "home" to your landing page name
