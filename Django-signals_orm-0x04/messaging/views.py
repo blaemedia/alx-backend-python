@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, render
 from .models import Message
 
 
@@ -41,14 +41,20 @@ def build_thread(message):
 @login_required
 def message_thread(request, message_id):
     """
-    Displays a message and all replies in a threaded conversation.
+    Displays a message and all replies in a threaded conversation,
+    filtered so the logged-in user can only see their own messages.
     """
-    message = (
-        Message.objects
-        .select_related("sender", "receiver", "parent_message")
-        .prefetch_related("replies__sender", "replies__receiver")
-        .get(id=message_id)
-    )
+    # Filter messages sent or received by the current user
+    messages = Message.objects.filter(
+        sender=request.user
+    ).select_related("sender", "receiver", "parent_message") \
+     .prefetch_related("replies__sender", "replies__receiver") \
+     .order_by("timestamp")
+
+    # Get the root message matching message_id from the filtered messages
+    message = messages.filter(id=message_id).first()
+    if not message:
+        return render(request, "messaging/thread.html", {"thread": None})
 
     thread = build_thread(message)
 
