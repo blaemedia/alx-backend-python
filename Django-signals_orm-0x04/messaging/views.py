@@ -1,61 +1,63 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.shortcuts import redirect, render
-from .models import Message
+from django.db import models
+from django.contrib.auth.models import User
 
 
-@login_required
-def delete_user(request):
-    """
-    Allows a logged-in user to permanently delete their account.
-    Triggers post_delete signals for cleanup.
-    """
-    user = request.user
-
-    # Log out before deleting the account
-    logout(request)
-
-    # Delete the user account
-    user.delete()
-
-    # Redirect after deletion
-    return redirect("home")  # Change "home" if needed
+class UnreadMessagesManager(models.Manager):
+    def for_user(self, user):
+        """
+        Returns unread messages for the given user.
+        Optimized with .only() to fetch only necessary fields.
+        """
+        return self.filter(receiver=user, read=False).only(
+            'id', 'sender', 'content', 'timestamp'
+        )
 
 
-def build_thread(message):
-    """
-    Recursively gather a message and all nested replies.
-    """
-    return {
-        "id": message.id,
-        "sender": message.sender.username,
-        "content": message.content,
-        "timestamp": message.timestamp,
-        "replies": [
-            build_thread(reply)
-            for reply in message.replies.all().order_by("timestamp")
-        ]
-    }
+class Message(models.Model):
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='sent_messages'
+    )
+    receiver = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='received_messages'
+    )
+    content = models.TextField()
+    read = models.BooleanField(default=False)   # <-- New field
+    edited = models.BooleanField(default=False)
+    edited_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="edited_messages"
+    )
+    parent_message = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.CASCADE,
+        related_name="replies"
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Managers
+    objects = models.Manager()  # default manager
+    unread = UnreadMessagesManager()  # custom manager
+
+    def __str__(self):
+        return f"Message {self.id} from {self.sender}"
 
 
-@login_required
-def message_thread(request, message_id):
-    """
-    Displays a message and all replies in a threaded conversation,
-    filtered so the logged-in user can only see their own messages.
-    """
-    # Filter messages sent or received by the current user
-    messages = Message.objects.filter(
-        sender=request.user
-    ).select_related("sender", "receiver", "parent_message") \
-     .prefetch_related("replies__sender", "replies__receiver") \
-     .order_by("timestamp")
+class MessageHistory(models.Model):
+    message = models.ForeignKey(
+        Message, on_delete=models.CASCADE, related_name="history"
+    )
+    old_content = models.TextField()
+    edited_at = models.DateTimeField(auto_now_add=True)
 
-    # Get the root message matching message_id from the filtered messages
-    message = messages.filter(id=message_id).first()
-    if not message:
-        return render(request, "messaging/thread.html", {"thread": None})
+    def __str__(self):
+        return f"History for Message {self.message.id} at {self.edited_at}"
 
-    thread = build_thread(message)
 
-    return render(request, "messaging/thread.html", {"thread": thread})
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user} - Message ID: {self.message.id}"
