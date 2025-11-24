@@ -1,22 +1,25 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Message, Notification
+from .models import Message, MessageHistory
 
 
-class MessageNotificationTest(TestCase):
-
+class MessageHistoryTest(TestCase):
     def setUp(self):
         self.sender = User.objects.create_user(username='sender', password='pass123')
         self.receiver = User.objects.create_user(username='receiver', password='pass123')
 
-    def test_notification_created_on_message(self):
+    def test_message_edit_creates_history(self):
         message = Message.objects.create(
             sender=self.sender,
             receiver=self.receiver,
-            content="Hello!"
+            content="Original message"
         )
 
-        # Ensure notification was created
-        notification = Notification.objects.filter(message=message).first()
-        self.assertIsNotNone(notification)
-        self.assertEqual(notification.user, self.receiver)
+        # Edit message
+        message.content = "Updated message"
+        message.save()
+
+        history = MessageHistory.objects.filter(message=message)
+        self.assertEqual(history.count(), 1)
+        self.assertEqual(history.first().old_content, "Original message")
+        self.assertTrue(message.edited)

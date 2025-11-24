@@ -1,16 +1,19 @@
 from django.contrib import admin
-from .models import Message, Notification
+from .models import Message, Notification, MessageHistory
 
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'sender', 'receiver', 'timestamp')
-    list_filter = ('sender', 'receiver', 'timestamp')
+    list_display = ('id', 'sender', 'receiver', 'edited', 'timestamp', 'updated_at')
     search_fields = ('sender__username', 'receiver__username', 'content')
 
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'message', 'is_read', 'timestamp')
-    list_filter = ('user', 'is_read', 'timestamp')
-    search_fields = ('user__username',)
+
+
+@admin.register(MessageHistory)
+class MessageHistoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'message', 'edited_at')
+    search_fields = ('message__content',)
