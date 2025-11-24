@@ -1,6 +1,6 @@
 from django.urls import path, include
 import rest_framework.routers  
-from rest_framework_nested import routers as nested_routers
+from drf_nested_routers import routers as nested_routers
 from . import views
 
 # Create a router and register our ViewSets
