@@ -34,6 +34,9 @@ class Message(models.Model):
     content = models.TextField()
     read = models.BooleanField(default=False)  # unread/read flag
     edited = models.BooleanField(default=False)  # track if edited
+    edited_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="edited_messages"
+    )  # track who edited
     timestamp = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
@@ -72,6 +75,9 @@ class MessageHistory(models.Model):
         Message, on_delete=models.CASCADE, related_name="history"
     )
     old_content = models.TextField()
+    edited_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )  # who made the edit
     edited_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -102,4 +108,8 @@ def log_message_history(sender, instance, **kwargs):
         # Mark message as edited
         instance.edited = True
         # Save history
-        MessageHistory.objects.create(message=instance, old_content=old_instance.content)
+        MessageHistory.objects.create(
+            message=instance,
+            old_content=old_instance.content,
+            edited_by=getattr(instance, "_edited_by_user", None)  # set by view
+        )
