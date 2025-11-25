@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import logout
+from django.views.decorators.cache import cache_page  # <-- required import
 
 from .models import Message
 
@@ -108,13 +109,15 @@ def inbox(request):
 
 
 # ------------------------------
-#  THREADED CONVERSATION VIEW
+#  THREADED CONVERSATION VIEW (with caching)
 # ------------------------------
 
 @login_required
+@cache_page(60)  # <-- cache this view for 60 seconds
 def threaded_conversation(request, message_id):
     """
     Loads a message and recursively loads all threaded replies.
+    Cached for 60 seconds using cache_page.
     """
     message = (
         Message.objects
