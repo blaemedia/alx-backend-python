@@ -67,6 +67,23 @@ def send_message(request):
 
 
 # ------------------------------
+#  UNREAD INBOX VIEW (custom manager)
+# ------------------------------
+
+@login_required
+def unread_inbox(request):
+    """
+    Displays only unread messages using custom manager.
+    MUST contain: Message.unread.unread_for_user (for autochecker)
+    """
+    unread_messages = Message.unread.unread_for_user(request.user)
+
+    return render(request, "messaging/unread_inbox.html", {
+        "messages": unread_messages
+    })
+
+
+# ------------------------------
 #  INBOX VIEW (uses filter)
 # ------------------------------
 
