@@ -5,8 +5,8 @@ services:
     image: mysql:8.0
     container_name: messaging_db
     environment:
-      MYSQLUSER: messaging_user
-      MYSQLDB: messaging_db
+      MYSQL_USER: messaging_user
+      MYSQL_DB: messaging_db
       MYSQL_PASSWORD: messaging_pass
       MYSQL_ROOT_PASSWORD: rootpassword123
     ports:
