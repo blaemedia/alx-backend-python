@@ -12,7 +12,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql   # This persists the database data
     restart: unless-stopped
 
   web:
@@ -28,4 +28,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  db_data:
+  mysql_data:   # Named volume for MySQL data persistence
