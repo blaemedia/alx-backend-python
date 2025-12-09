@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo "=============================="
+echo "     kubeScript Started"
+echo "=============================="
+
+echo
+echo "=== Checking if Minikube is installed ==="
+if ! command -v minikube &> /dev/null
+then
+    echo "❌ Minikube is NOT installed."
+    echo "Please install Minikube from: https://minikube.sigs.k8s.io/docs/start/"
+    exit 1
+else
+    echo "✔ Minikube is installed"
+fi
+
+echo
+echo "=== Starting Kubernetes Cluster (Minikube) ==="
+minikube start
+
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to start Minikube. Exiting."
+    exit 1
+fi
+
+echo
+echo "=== Verifying Kubernetes Cluster ==="
+kubectl cluster-info
+
+if [ $? -ne 0 ]; then
+    echo "❌ kubectl cluster-info failed. Cluster not running."
+    exit 1
+fi
+
+echo
+echo "=== Retrieving Available Pods ==="
+kubectl get pods --all-namespaces
+
+echo
+echo "=============================="
+echo "  kubeScript Completed ✔"
+echo "=============================="
