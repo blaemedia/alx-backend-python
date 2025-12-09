@@ -1,0 +1,45 @@
+#!/bin/bash
+
+echo "=============================="
+echo "   kubctl-0x03 Script Start"
+echo "=============================="
+
+BLUE_DEPLOYMENT="blue_deployment.yaml"
+DEPLOYMENT_NAME="django-messaging-app"
+
+# Apply the updated deployment
+echo "=== Applying updated blue deployment (image v2.0) ==="
+kubectl apply -f $BLUE_DEPLOYMENT
+
+# Trigger a rolling update
+echo
+echo "=== Triggering Rolling Update ==="
+kubectl rollout status deployment/$DEPLOYMENT_NAME
+
+# Test for downtime with curl (loop for 30 seconds)
+SERVICE_IP=$(kubectl get svc django-messaging-service -o jsonpath='{.spec.clusterIP}')
+SERVICE_PORT=8000
+
+echo
+echo "=== Testing app for downtime using curl ==="
+echo "Press Ctrl+C to stop early"
+END=$((SECONDS+30))
+while [ $SECONDS -lt $END ]; do
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVICE_IP:$SERVICE_PORT/)
+    if [ "$STATUS" -ne 200 ]; then
+        echo "$(date): ERROR - HTTP $STATUS"
+    else
+        echo "$(date): OK - HTTP $STATUS"
+    fi
+    sleep 2
+done
+
+# Verify rolling update completion
+echo
+echo "=== Verifying Rolling Update Completion ==="
+kubectl get pods -l version=blue
+
+echo
+echo "=============================="
+echo "   kubctl-0x03 Script Done ✔"
+echo "=============================="
