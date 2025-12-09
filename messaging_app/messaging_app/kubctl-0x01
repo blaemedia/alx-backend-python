@@ -1,0 +1,57 @@
+#!/bin/bash
+
+echo "=============================="
+echo "   kubctl-0x01 Script Start"
+echo "=============================="
+
+DEPLOYMENT_NAME="django-messaging-app"
+SERVICE_NAME="django-messaging-service"
+PORT=8000
+
+echo
+echo "=== Scaling Deployment to 3 Replicas ==="
+kubectl scale deployment/$DEPLOYMENT_NAME --replicas=3
+
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to scale deployment. Check the deployment name."
+    exit 1
+else
+    echo "✔ Deployment scaled to 3 replicas"
+fi
+
+
+echo
+echo "=== Verifying Running Pods ==="
+kubectl get pods -o wide
+
+
+echo
+echo "=== Running Load Test with wrk ==="
+echo "Checking if wrk is installed..."
+
+if ! command -v wrk &> /dev/null
+then
+    echo "❌ wrk is NOT installed."
+    echo "Install it from: https://github.com/wg/wrk"
+    exit 1
+fi
+
+# Get ClusterIP of the service
+CLUSTER_IP=$(kubectl get svc $SERVICE_NAME -o jsonpath='{.spec.clusterIP}')
+
+echo "Service ClusterIP: $CLUSTER_IP"
+echo "Running load test for 30 seconds..."
+
+wrk -t4 -c100 -d30s http://$CLUSTER_IP:$PORT/
+
+
+echo
+echo "=== Monitoring Resource Usage (Pods/Nodes) ==="
+echo "NOTE: Requires Metrics Server installed."
+kubectl top pods
+kubectl top nodes
+
+echo
+echo "=============================="
+echo "   kubctl-0x01 Script Done ✔"
+echo "=============================="
