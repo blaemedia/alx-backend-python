@@ -1,0 +1,47 @@
+#!/bin/bash
+
+echo "=============================="
+echo "   kubctl-0x02 Script Start"
+echo "=============================="
+
+# Filenames
+BLUE_DEPLOYMENT="blue_deployment.yaml"
+GREEN_DEPLOYMENT="green_deployment.yaml"
+SERVICE_FILE="kubeservice.yaml"
+
+# Apply blue deployment
+echo "=== Applying Blue Deployment ==="
+kubectl apply -f $BLUE_DEPLOYMENT
+kubectl get pods -l version=blue
+
+# Apply green deployment
+echo
+echo "=== Applying Green Deployment ==="
+kubectl apply -f $GREEN_DEPLOYMENT
+kubectl get pods -l version=green
+
+# Check logs for the green version
+GREEN_POD=$(kubectl get pods -l version=green -o jsonpath='{.items[0].metadata.name}')
+echo
+echo "=== Checking logs for Green Pod: $GREEN_POD ==="
+kubectl logs $GREEN_POD
+
+# Apply service (initially pointing to blue)
+echo
+echo "=== Applying Service ==="
+kubectl apply -f $SERVICE_FILE
+kubectl get svc django-messaging-service
+
+# Optional: Switch traffic to green gradually
+echo
+echo "=== Switch traffic to Green (patch service) ==="
+kubectl patch svc django-messaging-service -p '{"spec":{"selector":{"app":"django-messaging-app","version":"green"}}}'
+
+echo
+echo "Service now points to Green deployment"
+kubectl get endpoints django-messaging-service
+
+echo
+echo "=============================="
+echo "   kubctl-0x02 Script Done ✔"
+echo "=============================="
