@@ -1,45 +1,6 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-    }
-
-    stages {
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh '''
-                . venv/bin/activate
-                pytest --junitxml=report.xml
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            junit 'report.xml'
-        }
-        success {
-            echo '✅ Tests passed successfully'
-        }
-        failure {
-            echo '❌ Tests failed'
-        }
-    }pipeline {
-    agent any
-
     stages {
         stage('Checkout') {
             steps {
@@ -70,9 +31,8 @@ pipeline {
 
     post {
         always {
+            // This will always run, even if a stage fails
             junit 'report.xml'
         }
     }
-}
-
 }
