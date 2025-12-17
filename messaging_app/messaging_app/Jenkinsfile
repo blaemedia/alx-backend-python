@@ -1,18 +1,22 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials-id' // Replace with your Jenkins Docker Hub credentials ID
+        DOCKER_IMAGE = 'your-dockerhub-username/messaging_app:latest' // Replace with your Docker Hub repo
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'my-github-credentials-id', // <-- replace with your Jenkins credentials ID
+                    credentialsId: 'my-github-credentials-id', // Replace with your Jenkins GitHub credentials ID
                     url: 'https://github.com/blaemedia/alx-backend-python.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // ALX auto-checker expects pip3
                 bat '''
                 python -m venv venv
                 venv\\Scripts\\activate
@@ -28,6 +32,27 @@ pipeline {
                 venv\\Scripts\\activate
                 pytest --junitxml=report.xml
                 '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    bat "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat """
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                        """
+                    }
+                }
             }
         }
     }
