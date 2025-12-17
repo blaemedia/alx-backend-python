@@ -50,6 +50,14 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r messaging_app/requirements.txt
+          pip install flake8 coverage pytest-cov
+
+      - name: Lint with flake8
+        run: |
+          source venv/bin/activate
+          # Fail the build if linting errors are found
+          flake8 messaging_app --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+          flake8 messaging_app --exit-code 1
 
       - name: Wait for MySQL to be ready
         run: |
@@ -64,13 +72,21 @@ jobs:
           source venv/bin/activate
           python manage.py migrate
 
-      - name: Run Django tests
+      - name: Run Django tests with coverage
         run: |
           source venv/bin/activate
-          pytest --ds=messaging_app.settings --junitxml=report.xml
+          coverage run -m pytest --ds=messaging_app.settings
+          coverage xml -o coverage.xml
+          coverage report
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: report.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
