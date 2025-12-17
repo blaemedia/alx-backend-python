@@ -6,14 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/blaemedia/alx-backend-python.git'
-            }
-        }
-
-        stage('Create Virtualenv & Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 sh '''
                 python3 -m venv venv
