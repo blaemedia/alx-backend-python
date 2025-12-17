@@ -37,5 +37,42 @@ pipeline {
         failure {
             echo '❌ Tests failed'
         }
+    }pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/blaemedia/alx-backend-python.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                bat '''
+                python -m venv venv
+                venv\\Scripts\\activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                bat '''
+                venv\\Scripts\\activate
+                pytest --junitxml=report.xml
+                '''
+            }
+        }
     }
+
+    post {
+        always {
+            junit 'report.xml'
+        }
+    }
+}
+
 }
