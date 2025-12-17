@@ -1,26 +1,29 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-    }
-
     stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/blaemedia/alx-backend-python.git'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                // ALX auto-checker expects pip3
+                bat '''
+                python -m venv venv
+                venv\\Scripts\\activate
+                pip3 install --upgrade pip
+                pip3 install -r messaging_app/requirements.txt
                 '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                . venv/bin/activate
+                bat '''
+                venv\\Scripts\\activate
                 pytest --junitxml=report.xml
                 '''
             }
@@ -30,12 +33,6 @@ pipeline {
     post {
         always {
             junit 'report.xml'
-        }
-        success {
-            echo '✅ Tests passed successfully'
-        }
-        failure {
-            echo '❌ Tests failed'
         }
     }
 }
