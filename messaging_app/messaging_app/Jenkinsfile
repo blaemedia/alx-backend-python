@@ -1,10 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        timestamps()
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/YOUR_USERNAME/messaging_app.git'
+                git branch: 'main',
+                    url: 'https://github.com/blaemedia/alx-backend-python.git'
             }
         }
 
@@ -13,6 +18,7 @@ pipeline {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
+                pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
             }
@@ -31,6 +37,12 @@ pipeline {
     post {
         always {
             junit 'report.xml'
+        }
+        success {
+            echo '✅ Tests passed successfully'
+        }
+        failure {
+            echo '❌ Tests failed'
         }
     }
 }
