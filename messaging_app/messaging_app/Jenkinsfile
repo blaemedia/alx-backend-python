@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/YOUR_USERNAME/messaging_app.git'
+            }
+        }
+
+        stage('Create Virtualenv & Install Dependencies') {
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pytest --junitxml=report.xml
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'report.xml'
+        }
+    }
+}
