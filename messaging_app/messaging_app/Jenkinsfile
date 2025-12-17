@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/blaemedia/alx-backend-python.git'
+                git branch: 'main',
+                    credentialsId: 'my-github-credentials-id', // <-- replace with your Jenkins credentials ID
+                    url: 'https://github.com/blaemedia/alx-backend-python.git'
             }
         }
 
